@@ -57,6 +57,36 @@
 				"security": [],
 				"parameters": []
 			}
+		},
+		"/ai_v1/ai-health": {
+			"get": {
+				"operationId": "Health",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"message": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"message"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"AI Controller"
+				],
+				"security": [],
+				"parameters": []
+			}
 		}
 	},
 	"servers": [
