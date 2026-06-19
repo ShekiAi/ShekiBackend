@@ -18,7 +18,6 @@ const app = express();
 // CORS CONFIGURATION
 // ============================================
 
-// Get allowed origins from environment or use defaults
 const allowedOrigins = process.env.ALLOWED_ORIGINS 
   ? process.env.ALLOWED_ORIGINS.split(',')
   : [
@@ -34,17 +33,14 @@ const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NOD
 
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-    // Allow requests with no origin (like mobile apps, Postman, server-to-server)
     if (!origin) {
       return callback(null, true);
     }
 
-    // In development, allow all origins
     if (isDevelopment) {
       return callback(null, true);
     }
 
-    // In production, check against allowed list
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -70,7 +66,7 @@ const corsOptions = {
   optionsSuccessStatus: 204,
 };
 
-// ✅ Apply CORS middleware - this handles both regular requests AND OPTIONS preflight
+// Apply CORS middleware
 app.use(cors(corsOptions));
 
 // ============================================
@@ -86,7 +82,39 @@ app.use(urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
 // ============================================
-// ROUTES
+// 📍 ROOT ROUTES (ADD THESE!)
+// ============================================
+
+// Root endpoint - shows API info
+app.get("/", (req: ExRequest, res: ExResponse) => {
+  res.json({
+    message: "🚀 Sheki Backend API",
+    version: "1.0.0",
+    endpoints: {
+      docs: "/api-docs",
+      health: "/health",
+      api: "/api/v1",
+      swagger_json: "/swagger.json"
+    },
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development"
+  });
+});
+
+// Simple health check at root level
+app.get("/health", (req: ExRequest, res: ExResponse) => {
+  res.json({
+    status: "healthy",
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development"
+  });
+});
+
+// ============================================
+// API ROUTES (TSOA)
 // ============================================
 
 // Create an API router
@@ -95,10 +123,13 @@ const apiRouter = express.Router();
 // Register all tsoa routes on the apiRouter
 RegisterRoutes(apiRouter);
 
-// Mount the apiRouter at /api path
+// Mount the apiRouter at /api/v1 path
 app.use("/api/v1", apiRouter);
 
-// Swagger UI
+// ============================================
+// SWAGGER DOCS
+// ============================================
+
 app.use("/api-docs", swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
   const swaggerDocument = await import("../dist/swagger.json");
   res.send(swaggerUi.generateHTML(swaggerDocument));
@@ -109,7 +140,7 @@ app.get("/swagger.json", async (_req: ExRequest, res: ExResponse) => {
   res.json(swaggerDocument);
 });
 
-// CORS test endpoint
+// CORS test endpoint (keep this as well)
 app.get("/api/cors-test", (req: ExRequest, res: ExResponse) => {
   res.json({
     success: true,
@@ -132,12 +163,18 @@ app.use((_req: ExRequest, res: ExResponse) => {
   res.status(404).json({
     success: false,
     message: "Route not found",
+    available_endpoints: {
+      root: "/",
+      health: "/health",
+      api: "/api/v1",
+      docs: "/api-docs",
+      swagger_json: "/swagger.json"
+    }
   });
 });
 
 // Global error handler
 app.use((err: unknown, req: ExRequest, res: ExResponse, next: NextFunction) => {
-  // Handle CORS errors specifically
   if (err instanceof Error && err.message === 'Not allowed by CORS') {
     return res.status(403).json({
       success: false,
