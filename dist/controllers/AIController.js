@@ -8,14 +8,37 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AIController = void 0;
 const tsoa_1 = require("tsoa");
+const ai_v1_service_1 = require("../services/AI_Services/ai_v1_service");
 let AIController = class AIController extends tsoa_1.Controller {
     async health() {
         return {
             message: "AI Health is check",
         };
+    }
+    async TestPrompt(data) {
+        try {
+            const promptData = await ai_v1_service_1.AIServices.SendPropmt(data.prompt);
+            return {
+                message: "Success",
+                success: [promptData],
+                status: 200,
+                error: [],
+            };
+        }
+        catch (error) {
+            return {
+                message: error.message,
+                success: [],
+                status: 500,
+                error: [error],
+            };
+        }
     }
 };
 exports.AIController = AIController;
@@ -25,6 +48,13 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], AIController.prototype, "health", null);
+__decorate([
+    (0, tsoa_1.Post)("test-prompt"),
+    __param(0, (0, tsoa_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AIController.prototype, "TestPrompt", null);
 exports.AIController = AIController = __decorate([
     (0, tsoa_1.Tags)("AI Controller"),
     (0, tsoa_1.Route)("ai_v1")
