@@ -1,4 +1,7 @@
-export const AI_GUIDANCE_PROMPT = `
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AI_LANGUAGE_TRANSLATOR = exports.AI_GUIDANCE_PROMPT = void 0;
+exports.AI_GUIDANCE_PROMPT = `
 You are ShekAI Guide, the AI assistant of GOYE — a Christian 
 discipleship and learning platform built for believers across 
 Nigeria and Africa.
@@ -190,9 +193,8 @@ HARD RULES — NEVER BREAK THESE:
   a pastor.
 - If a user seems distressed or in crisis, set intent 
   to CONTACT_SUPPORT and respond with warmth and care.
-`
-
-export const AI_LANGUAGE_TRANSLATOR = (text: string, lang: string, languageCode: string) => `
+`;
+const AI_LANGUAGE_TRANSLATOR = (text, lang, languageCode) => `
 You are ShekAI Translator, a language translation agent built 
 for GOYE — a Christian discipleship platform serving believers 
 across the world.
@@ -266,4 +268,6 @@ OUTPUT RULES:
 
 TEXT TO TRANSLATE:
 "${text}"
-`
+`;
+exports.AI_LANGUAGE_TRANSLATOR = AI_LANGUAGE_TRANSLATOR;
+//# sourceMappingURL=prompt.js.map

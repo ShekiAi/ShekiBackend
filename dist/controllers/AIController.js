@@ -23,10 +23,10 @@ let AIController = class AIController extends tsoa_1.Controller {
     }
     async TestPrompt(data) {
         try {
-            const promptData = await ai_v1_service_1.AIServices.SendPropmt(data.prompt);
+            const promptData = await ai_v1_service_1.AIServices.SendPrompt(data.prompt);
             return {
                 message: "Success",
-                success: [promptData],
+                data: [promptData],
                 status: 200,
                 error: [],
             };
@@ -34,7 +34,26 @@ let AIController = class AIController extends tsoa_1.Controller {
         catch (error) {
             return {
                 message: error.message,
-                success: [],
+                data: [],
+                status: 500,
+                error: [error],
+            };
+        }
+    }
+    async TranslateLanguage(data) {
+        try {
+            const promptData = await ai_v1_service_1.AIServices.TranslateLang(data.text, data.lang, data.languageCode);
+            return {
+                message: "Success",
+                data: [promptData],
+                status: 200,
+                error: [],
+            };
+        }
+        catch (error) {
+            return {
+                message: error.message,
+                data: [],
                 status: 500,
                 error: [error],
             };
@@ -55,6 +74,13 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AIController.prototype, "TestPrompt", null);
+__decorate([
+    (0, tsoa_1.Post)("translate-language"),
+    __param(0, (0, tsoa_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AIController.prototype, "TranslateLanguage", null);
 exports.AIController = AIController = __decorate([
     (0, tsoa_1.Tags)("AI Controller"),
     (0, tsoa_1.Route)("ai_v1")

@@ -21,7 +21,7 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "message": {"dataType":"string","required":true},
-            "success": {"dataType":"array","array":{"dataType":"any"},"required":true},
+            "data": {"dataType":"array","array":{"dataType":"any"},"required":true},
             "status": {"dataType":"double","required":true},
             "error": {"dataType":"array","array":{"dataType":"any"},"required":true},
         },
@@ -122,6 +122,36 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'TestPrompt',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsAIController_TranslateLanguage: Record<string, TsoaRoute.ParameterSchema> = {
+                data: {"in":"body","name":"data","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"languageCode":{"dataType":"string","required":true},"lang":{"dataType":"string","required":true},"text":{"dataType":"string","required":true}}},
+        };
+        app.post('/ai_v1/translate-language',
+            ...(fetchMiddlewares<RequestHandler>(AIController)),
+            ...(fetchMiddlewares<RequestHandler>(AIController.prototype.TranslateLanguage)),
+
+            async function AIController_TranslateLanguage(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsAIController_TranslateLanguage, request, response });
+
+                const controller = new AIController();
+
+              await templateService.apiHandler({
+                methodName: 'TranslateLanguage',
                 controller,
                 response,
                 next,

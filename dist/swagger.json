@@ -12,7 +12,7 @@
 					"message": {
 						"type": "string"
 					},
-					"success": {
+					"data": {
 						"items": {},
 						"type": "array"
 					},
@@ -27,7 +27,7 @@
 				},
 				"required": [
 					"message",
-					"success",
+					"data",
 					"status",
 					"error"
 				],
@@ -148,6 +148,122 @@
 								},
 								"required": [
 									"prompt"
+								],
+								"type": "object"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/ai_v1/translate-language": {
+			"post": {
+				"operationId": "TranslateLanguage",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"properties": {
+												"error": {
+													"items": {},
+													"type": "array"
+												},
+												"status": {
+													"type": "number",
+													"format": "double"
+												},
+												"data": {
+													"items": {
+														"properties": {
+															"data": {
+																"items": {
+																	"type": "string"
+																},
+																"type": "array"
+															},
+															"message": {
+																"type": "string"
+															}
+														},
+														"required": [
+															"data",
+															"message"
+														],
+														"type": "object"
+													},
+													"type": "array"
+												},
+												"message": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"error",
+												"status",
+												"data",
+												"message"
+											],
+											"type": "object"
+										},
+										{
+											"properties": {
+												"error": {
+													"items": {},
+													"type": "array"
+												},
+												"status": {
+													"type": "number",
+													"format": "double"
+												},
+												"data": {
+													"items": {},
+													"type": "array"
+												},
+												"message": {}
+											},
+											"required": [
+												"error",
+												"status",
+												"data",
+												"message"
+											],
+											"type": "object"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"AI Controller"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"languageCode": {
+										"type": "string"
+									},
+									"lang": {
+										"type": "string"
+									},
+									"text": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"languageCode",
+									"lang",
+									"text"
 								],
 								"type": "object"
 							}

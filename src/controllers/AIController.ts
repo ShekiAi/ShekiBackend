@@ -32,4 +32,25 @@ export class AIController extends Controller {
       };
     }
   }
+
+  @Post("translate-language")
+  public async TranslateLanguage(@Body() data: {text: string, lang: string, languageCode: string}) {
+    try {
+      const promptData = await AIServices.TranslateLang(data.text, data.lang, data.languageCode);
+
+      return {
+        message: "Success",
+        data: [promptData],
+        status: 200,
+        error: [],
+      };
+    } catch (error: any) {
+      return {
+        message: error.message,
+        data: [],
+        status: 500,
+        error: [error],
+      };
+    }
+  }
 }

@@ -14,7 +14,7 @@ const models = {
         "dataType": "refObject",
         "properties": {
             "message": { "dataType": "string", "required": true },
-            "success": { "dataType": "array", "array": { "dataType": "any" }, "required": true },
+            "data": { "dataType": "array", "array": { "dataType": "any" }, "required": true },
             "status": { "dataType": "double", "required": true },
             "error": { "dataType": "array", "array": { "dataType": "any" }, "required": true },
         },
@@ -72,7 +72,7 @@ function RegisterRoutes(app) {
     });
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     const argsAIController_TestPrompt = {
-        prompt: { "in": "body", "name": "prompt", "required": true, "dataType": "string" },
+        data: { "in": "body", "name": "data", "required": true, "dataType": "nestedObjectLiteral", "nestedProperties": { "prompt": { "dataType": "string", "required": true } } },
     };
     app.post('/ai_v1/test-prompt', ...((0, runtime_1.fetchMiddlewares)(AIController_1.AIController)), ...((0, runtime_1.fetchMiddlewares)(AIController_1.AIController.prototype.TestPrompt)), async function AIController_TestPrompt(request, response, next) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -82,6 +82,29 @@ function RegisterRoutes(app) {
             const controller = new AIController_1.AIController();
             await templateService.apiHandler({
                 methodName: 'TestPrompt',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+            });
+        }
+        catch (err) {
+            return next(err);
+        }
+    });
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    const argsAIController_TranslateLanguage = {
+        data: { "in": "body", "name": "data", "required": true, "dataType": "nestedObjectLiteral", "nestedProperties": { "languageCode": { "dataType": "string", "required": true }, "lang": { "dataType": "string", "required": true }, "text": { "dataType": "string", "required": true } } },
+    };
+    app.post('/ai_v1/translate-language', ...((0, runtime_1.fetchMiddlewares)(AIController_1.AIController)), ...((0, runtime_1.fetchMiddlewares)(AIController_1.AIController.prototype.TranslateLanguage)), async function AIController_TranslateLanguage(request, response, next) {
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        let validatedArgs = [];
+        try {
+            validatedArgs = templateService.getValidatedArgs({ args: argsAIController_TranslateLanguage, request, response });
+            const controller = new AIController_1.AIController();
+            await templateService.apiHandler({
+                methodName: 'TranslateLanguage',
                 controller,
                 response,
                 next,
