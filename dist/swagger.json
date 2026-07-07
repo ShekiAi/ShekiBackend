@@ -165,75 +165,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"anyOf": [
-										{
-											"properties": {
-												"error": {
-													"items": {},
-													"type": "array"
-												},
-												"status": {
-													"type": "number",
-													"format": "double"
-												},
-												"data": {
-													"items": {
-														"properties": {
-															"data": {
-																"items": {
-																	"type": "string"
-																},
-																"type": "array"
-															},
-															"message": {
-																"type": "string"
-															}
-														},
-														"required": [
-															"data",
-															"message"
-														],
-														"type": "object"
-													},
-													"type": "array"
-												},
-												"message": {
-													"type": "string"
-												}
-											},
-											"required": [
-												"error",
-												"status",
-												"data",
-												"message"
-											],
-											"type": "object"
-										},
-										{
-											"properties": {
-												"error": {
-													"items": {},
-													"type": "array"
-												},
-												"status": {
-													"type": "number",
-													"format": "double"
-												},
-												"data": {
-													"items": {},
-													"type": "array"
-												},
-												"message": {}
-											},
-											"required": [
-												"error",
-												"status",
-												"data",
-												"message"
-											],
-											"type": "object"
-										}
-									]
+									"$ref": "#/components/schemas/APIResponse"
 								}
 							}
 						}
@@ -264,6 +196,68 @@
 									"languageCode",
 									"lang",
 									"text"
+								],
+								"type": "object"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/ai_v1/ai-fetch-users": {
+			"get": {
+				"operationId": "FetchUsers",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/APIResponse"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"AI Controller"
+				],
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/ai_v1/search": {
+			"post": {
+				"operationId": "SearchAgentController",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/APIResponse"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"AI Controller"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"query": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"query"
 								],
 								"type": "object"
 							}

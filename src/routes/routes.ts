@@ -163,6 +163,65 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsAIController_FetchUsers: Record<string, TsoaRoute.ParameterSchema> = {
+        };
+        app.get('/ai_v1/ai-fetch-users',
+            ...(fetchMiddlewares<RequestHandler>(AIController)),
+            ...(fetchMiddlewares<RequestHandler>(AIController.prototype.FetchUsers)),
+
+            async function AIController_FetchUsers(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsAIController_FetchUsers, request, response });
+
+                const controller = new AIController();
+
+              await templateService.apiHandler({
+                methodName: 'FetchUsers',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsAIController_SearchAgentController: Record<string, TsoaRoute.ParameterSchema> = {
+                data: {"in":"body","name":"data","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"query":{"dataType":"string","required":true}}},
+        };
+        app.post('/ai_v1/search',
+            ...(fetchMiddlewares<RequestHandler>(AIController)),
+            ...(fetchMiddlewares<RequestHandler>(AIController.prototype.SearchAgentController)),
+
+            async function AIController_SearchAgentController(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsAIController_SearchAgentController, request, response });
+
+                const controller = new AIController();
+
+              await templateService.apiHandler({
+                methodName: 'SearchAgentController',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 

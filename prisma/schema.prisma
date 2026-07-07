@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -12,6 +7,975 @@ datasource db {
   provider = "postgresql"
 }
 
+model Achievement {
+  id                   String                 @id
+  title                String
+  content              String
+  point                Int
+  totalPoint           Int?
+  progressMessage      String?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime?
+  progressId           String?
+  courseId             String?
+  groupId              String?
+  userId               String?
+  Course               Course?                @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  Group                Group?                 @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  Progress             Progress?              @relation(fields: [progressId], references: [id], onDelete: Cascade)
+  User                 User?                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Badges               Badges[]
+  BadgesAndLevelEarned BadgesAndLevelEarned[]
+  Notification         Notification[]
+}
+
+model AdminProfile {
+  id          String    @id
+  userId      String    @unique
+  role        String    @default("super_admin")
+  permissions Json?
+  createdBy   String?
+  lastLoginAt DateTime?
+  loginCount  Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([role])
+  @@index([userId])
+}
+
+model Badges {
+  id                     String                @id
+  badges                 BadgesEnum            @default(CADET_BADGE)
+  badgesAndLevelEarnedId String?
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime?
+  achievementId          String?
+  userId                 String?
+  progressId             String?
+  Achievement            Achievement?          @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  BadgesAndLevelEarned   BadgesAndLevelEarned? @relation(fields: [badgesAndLevelEarnedId], references: [id], onDelete: Cascade)
+  Progress               Progress?             @relation(fields: [progressId], references: [id], onDelete: Cascade)
+  User                   User?                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model BadgesAndLevelEarned {
+  id            String       @id
+  level         Levels       @default(LEVEL1_SEEKER)
+  userId        String?
+  courseId      String?
+  progressId    String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime?
+  achievementId String?
+  Badges        Badges[]
+  Achievement   Achievement? @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  Course        Course?      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  Progress      Progress?    @relation(fields: [progressId], references: [id], onDelete: Cascade)
+  User          User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Certificate {
+  id                  String          @id
+  certificateType     CertificateType @default(OTHER)
+  certificateImageURL String
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime
+  courseId            String?
+  organizationId      String?
+  userId              String?
+  enrollmentId        String?
+  Course              Course?         @relation(fields: [courseId], references: [id])
+  Enrollment          Enrollment?     @relation(fields: [enrollmentId], references: [id])
+  Organization        Organization?   @relation(fields: [organizationId], references: [id])
+  User                User?           @relation(fields: [userId], references: [id])
+}
+
+model Church_Organization {
+  id                    String       @id
+  church_min_name       String?
+  church_ld_pastor      String?
+  church_role           String?
+  church_address        String?
+  church_weekly_service String?
+  church_website        String?
+  church_logo           String?
+  church_email          String?      @unique
+  organzationId         String       @unique
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime?
+  Organization          Organization @relation(fields: [organzationId], references: [id], onDelete: Cascade)
+}
+
+model Club_Organization {
+  id                     String       @id
+  club_name              String?
+  club_type              String?
+  club_leader_name       String?
+  club_role              String?
+  club_meeting_frequency String?
+  club_social_link       String?
+  club_parent_org        String?
+  club_description       String?
+  club_document          String?
+  club_email             String?
+  organzationId          String       @unique
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime?
+  Organization           Organization @relation(fields: [organzationId], references: [id], onDelete: Cascade)
+}
+
+model Course {
+  id                       String                 @id
+  course_title             String
+  course_short_description String
+  course_description       String
+  course_level             String
+  course_image             String
+  createdAt                DateTime               @default(now())
+  createdBy                String
+  createdUserId            String
+  organizationId           String?
+  organizationName         String?
+  progressId               String?
+  updatedAt                DateTime
+  point                    Int?                   @default(0)
+  savedCoursesId           String?
+  Achievement              Achievement[]
+  BadgesAndLevelEarned     BadgesAndLevelEarned[]
+  Certificate              Certificate[]
+  User                     User                   @relation(fields: [createdUserId], references: [id], onDelete: Cascade)
+  Organization             Organization?          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  Progress                 Progress?              @relation(fields: [progressId], references: [id], onDelete: Cascade)
+  Enrollment               Enrollment[]
+  Material                 Material[]
+  Module                   Module[]
+  Notification             Notification[]
+  Objectives               Objectives[]
+  PointHistory             PointHistory[]
+  SavedCourses             SavedCourses?
+  VideoTracker             VideoTracker[]
+  posts                    posts[]
+  questions                questions[]
+  quiz_attempts            quiz_attempts[]
+  quizzes                  quizzes[]
+}
+
+model Discussion {
+  id               String           @id
+  content          String
+  mediaUrls        Json?            @default("[]")
+  isPublic         Boolean          @default(true)
+  authorId         String
+  parentId         String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime
+  category         Category         @default(DISCUSSION)
+  User             User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  Discussion       Discussion?      @relation("DiscussionToDiscussion", fields: [parentId], references: [id], onDelete: Cascade)
+  other_Discussion Discussion[]     @relation("DiscussionToDiscussion")
+  DiscussionLike   DiscussionLike[]
+
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([isPublic])
+  @@index([parentId])
+}
+
+model DiscussionLike {
+  id           String     @id
+  discussionId String
+  userId       String
+  createdAt    DateTime   @default(now())
+  Discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  User         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([discussionId, userId])
+  @@index([discussionId])
+  @@index([userId])
+}
+
+model Enrollment {
+  id             String           @id
+  userId         String
+  courseId       String
+  createdAt      DateTime         @default(now())
+  completedAt    DateTime?
+  enrolledAt     DateTime         @default(now())
+  startedAt      DateTime
+  status         EnrollmentStatus @default(NOT_ENROLLED)
+  organizationId String?
+  score          Int?             @default(0)
+  Certificate    Certificate[]
+  Course         Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  Organization   Organization?    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  User           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  PointHistory   PointHistory[]
+
+  @@unique([userId, courseId])
+}
+
+model Event {
+  id                String        @id
+  event_name        String
+  event_description String
+  event_time        String
+  event_date        String
+  event_type        String
+  event_link        String
+  groupid           String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime?
+  Group             Group         @relation(fields: [groupid], references: [id], onDelete: Cascade)
+  JoinedEvent       JoinedEvent[]
+}
+
+model Feedback {
+  id             String        @id
+  message        String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime
+  userId         String?
+  organizationId String?
+  type           FeedbackType
+  Organization   Organization? @relation(fields: [organizationId], references: [id])
+  User           User?         @relation(fields: [userId], references: [id])
+}
+
+model Group {
+  id                      String         @id
+  group_title             String
+  group_short_description String
+  group_description       String
+  group_image             String?
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime
+  userId                  String?
+  Achievement             Achievement[]
+  Event                   Event[]
+  User                    User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  JoinedEvent             JoinedEvent[]
+  JoinedGroup             JoinedGroup[]
+  Notification            Notification[]
+}
+
+model InviteUser {
+  id                 String               @id
+  email              String
+  role               String
+  code               String
+  organizationId     String
+  sentById           String
+  createdAt          DateTime             @default(now())
+  expiresIn          DateTime
+  invited            Boolean              @default(true)
+  updatedAt          DateTime?
+  Organization       Organization         @relation(fields: [organizationId], references: [id])
+  User               User                 @relation(fields: [sentById], references: [id], onDelete: Cascade)
+  OrganizationMember OrganizationMember[]
+}
+
+model JoinedEvent {
+  id            String    @id
+  isjoinedEvent Boolean
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime?
+  groupId       String?
+  eventId       String?
+  Event         Event?    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  Group         Group?    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+}
+
+model JoinedGroup {
+  id           String         @id
+  isJoined     Boolean        @default(false)
+  joinedAt     DateTime       @default(now())
+  groupId      String
+  studentId    String
+  point        Int?           @default(0)
+  progressId   String?
+  Group        Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  Progress     Progress?      @relation(fields: [progressId], references: [id], onDelete: Cascade)
+  User         User           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  PointHistory PointHistory[]
+
+  @@unique([groupId, studentId])
+}
+
+model Lesson {
+  id           String         @id
+  lesson_title String?
+  lesson_video String
+  moduleId     String
+  createdAt    DateTime       @default(now())
+  duration     Int?
+  order        Int?           @default(0)
+  updatedAt    DateTime
+  lessonScore  Int?
+  point        Int            @default(0)
+  Module       Module         @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  PointHistory PointHistory[]
+  Progress     Progress[]
+  VideoTracker VideoTracker[]
+}
+
+model Likes {
+  id        String   @id
+  userId    String
+  postId    String?
+  replyId   String?
+  createdAt DateTime @default(now())
+  posts     posts?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  Reply     Reply?   @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@unique([userId, replyId])
+}
+
+model Material {
+  id                   String   @id
+  material_title       String?
+  material_description String?
+  material_pages       Int?
+  material_document    String
+  courseId             String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime
+  Course               Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id        String    @id
+  content   String
+  toUserId  String
+  userId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Module {
+  id                 String   @id
+  module_title       String
+  module_description String
+  module_duration    String
+  courseId           String
+  createdAt          DateTime @default(now())
+  order              Int?     @default(0)
+  updatedAt          DateTime
+  Lesson             Lesson[]
+  Course             Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id             String        @id
+  title          String
+  message        String
+  type           String
+  role           String
+  to             String
+  isRead         Boolean       @default(false)
+  userId         String?
+  courseId       String?
+  groupId        String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime?
+  achievementId  String?
+  organizationId String?
+  postId         String?
+  replyId        String?
+  Achievement    Achievement?  @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  Course         Course?       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  Group          Group?        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  Organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  posts          posts?        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  Reply          Reply?        @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  User           User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([to, courseId])
+  @@index([to, createdAt])
+  @@index([to, groupId])
+  @@index([to, isRead])
+  @@index([userId])
+}
+
+model Objectives {
+  id               String   @id
+  objective_title1 String
+  objective_title2 String
+  objective_title3 String
+  objective_title4 String
+  objective_title5 String
+  courseId         String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime
+  Course           Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model Organization {
+  id                         String               @id
+  organization_type          OrgType              @default(OTHER)
+  organization_email         String               @unique
+  organization_phone_number  String
+  organization_country       String
+  organization_state         String
+  organization_description   String
+  organization_role          String
+  organization_password      String?
+  organization_year          String
+  organization_image         String?
+  isOnline                   Boolean?             @default(false)
+  lastActive                 DateTime
+  userId                     String?              @unique
+  createdAt                  DateTime             @default(now())
+  updatedAt                  DateTime?
+  form_type                  FormType?            @default(ORGANIZATION)
+  language                   String?
+  languageCode               String?
+  isVerified                 Boolean              @default(false)
+  verificationOTP            String?
+  verificationOTPAttempts    Int                  @default(0)
+  verificationOTPExpires     DateTime?
+  verificationOTPResendAt    DateTime?
+  verificationOTPResendCount Int                  @default(0)
+  verifiedAt                 DateTime?
+  resetToken                 String?
+  resetTokenExpires          DateTime?
+  organization_name          String
+  Certificate                Certificate[]
+  Church_Organization        Church_Organization?
+  Club_Organization          Club_Organization?
+  Course                     Course[]
+  Enrollment                 Enrollment[]
+  Feedback                   Feedback[]
+  InviteUser                 InviteUser[]
+  Notification               Notification[]
+  User                       User?                @relation(fields: [userId], references: [id])
+  OrganizationMember         OrganizationMember[]
+  PointHistory               PointHistory[]
+  PricingHistory             PricingHistory[]
+  School_Organization        School_Organization?
+  Settings                   Settings[]
+  posts                      posts[]
+  quiz_attempts              quiz_attempts[]
+  quizzes                    quizzes[]
+}
+
+model OrganizationMember {
+  id             String       @id
+  userId         String
+  organizationId String
+  role           String       @default("member")
+  joinedVia      JoinMethod   @default(INVITE)
+  joinedAt       DateTime     @default(now())
+  isActive       Boolean      @default(true)
+  inviteId       String?
+  InviteUser     InviteUser?  @relation(fields: [inviteId], references: [id])
+  Organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  User           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+  @@index([userId])
+}
+
+model Otp {
+  id        String   @id
+  email     String
+  code      String
+  createdAt DateTime @default(now())
+  expiresIn DateTime
+}
+
+model PointHistory {
+  id             String         @id
+  title          String?
+  reason         String?
+  point          Int
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime?
+  userId         String?
+  organizationId String?
+  courseId       String?
+  videoTrackerId String?
+  joinedGroupId  String?
+  enrollmentId   String?
+  lessonId       String?
+  quizAttemptId  String?
+  progressId     String?
+  Course         Course?        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  Enrollment     Enrollment?    @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  JoinedGroup    JoinedGroup?   @relation(fields: [joinedGroupId], references: [id], onDelete: Cascade)
+  Lesson         Lesson?        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  Organization   Organization?  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  Progress       Progress?      @relation(fields: [progressId], references: [id], onDelete: Cascade)
+  quiz_attempts  quiz_attempts? @relation(fields: [quizAttemptId], references: [id], onDelete: Cascade)
+  User           User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  VideoTracker   VideoTracker?  @relation(fields: [videoTrackerId], references: [id], onDelete: Cascade)
+}
+
+model PricingHistory {
+  id              String         @id
+  type            MemberPlanType
+  amountPayed     Int
+  planDuration    PlanDuration
+  plans           Plans
+  userId          String?
+  organizationId  String?
+  planActivatedAt DateTime       @default(now())
+  planUpdatedAt   DateTime?
+  Organization    Organization?  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  User            User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PrivateMessage {
+  id                                   String           @id
+  content                              String
+  senderId                             String
+  receiverId                           String
+  replyToId                            String?
+  isDeleted                            Boolean          @default(false)
+  isEdited                             Boolean          @default(false)
+  readAt                               DateTime?
+  createdAt                            DateTime         @default(now())
+  updatedAt                            DateTime
+  hiddenFor                            String[]         @default([])
+  User_PrivateMessage_receiverIdToUser User             @relation("PrivateMessage_receiverIdToUser", fields: [receiverId], references: [id], onDelete: Cascade)
+  PrivateMessage                       PrivateMessage?  @relation("PrivateMessageToPrivateMessage", fields: [replyToId], references: [id], onDelete: Cascade)
+  other_PrivateMessage                 PrivateMessage[] @relation("PrivateMessageToPrivateMessage")
+  User_PrivateMessage_senderIdToUser   User             @relation("PrivateMessage_senderIdToUser", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([readAt])
+  @@index([receiverId])
+  @@index([replyToId])
+  @@index([senderId])
+}
+
+model Progress {
+  id                   String                 @id
+  progressBar          Int
+  startedJourney       Boolean                @default(false)
+  userId               String?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime?
+  lessonId             String?
+  Achievement          Achievement[]
+  Badges               Badges[]
+  BadgesAndLevelEarned BadgesAndLevelEarned[]
+  Course               Course[]
+  JoinedGroup          JoinedGroup[]
+  PointHistory         PointHistory[]
+  Lesson               Lesson?                @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  User                 User?                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  VideoTracker         VideoTracker[]
+  quiz_attempts        quiz_attempts[]
+
+  @@unique([userId, lessonId])
+}
+
+model Reply {
+  id           String         @id
+  content      String
+  userId       String
+  postId       String?
+  createdAt    DateTime       @default(now())
+  parentId     String?
+  Likes        Likes[]
+  Notification Notification[]
+  Reply        Reply?         @relation("ReplyToReply", fields: [parentId], references: [id], onDelete: Cascade)
+  other_Reply  Reply[]        @relation("ReplyToReply")
+  posts        posts?         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  User         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([parentId])
+}
+
+model SavedCourses {
+  id        String   @id
+  userId    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  courseId  String?  @unique
+  Course    Course?  @relation(fields: [courseId], references: [id])
+  User      User?    @relation(fields: [userId], references: [id])
+}
+
+model School_Organization {
+  id                          String       @id
+  school_name                 String?
+  school_type                 String?
+  school_address              String?
+  school_admin_name           String?
+  school_role                 String?
+  school_email                String?      @unique
+  school_website              String?
+  school_accreditation_number String?
+  school_document             String?
+  school_logo                 String?
+  organzationId               String       @unique
+  createdAt                   DateTime     @default(now())
+  updatedAt                   DateTime?
+  Organization                Organization @relation(fields: [organzationId], references: [id], onDelete: Cascade)
+}
+
+model Settings {
+  id                       String        @id
+  enable_push_notification Boolean?      @default(true)
+  course_updates           Boolean?      @default(true)
+  event                    Boolean?      @default(true)
+  achievement              Boolean?      @default(true)
+  daily_reminders          Boolean?      @default(false)
+  group_activity           Boolean?      @default(true)
+  email_notification       Boolean?      @default(true)
+  darkMode                 Boolean?      @default(true)
+  userId                   String?
+  organizationId           String?
+  updatedAt                DateTime
+  createdAt                DateTime      @default(now())
+  show_annoucement         Boolean?      @default(true)
+  Organization             Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  User                     User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 model User {
-  id String @id @default(uuid())
+  id                                             String                 @id
+  first_name                                     String
+  last_name                                      String
+  email_address                                  String                 @unique
+  password                                       String?
+  country                                        String
+  state                                          String
+  phone_number                                   String
+  role                                           String                 @default("student")
+  level                                          String
+  completed                                      String                 @default("false")
+  createdAt                                      DateTime               @default(now())
+  isOnline                                       Boolean                @default(false)
+  lastActive                                     DateTime               @default(now())
+  updatedAt                                      DateTime
+  user_pic                                       String?
+  completedCourses                               Int?
+  completedLessons                               Int?
+  completedVideo                                 Int?
+  form_type                                      FormType?              @default(INDIVIDUAL)
+  paymentCode                                    String?
+  point                                          Int?
+  provider                                       String?                @default("OTHER")
+  firebase_uid                                   String?                @unique
+  isProfileComplete                              Boolean?               @default(false)
+  waitlistId                                     String?                @unique
+  isFromWaitList                                 Boolean?
+  language                                       String?                @default("unknown")
+  languageCode                                   LanguageCode?          @default(unknown)
+  isVerified                                     Boolean                @default(false)
+  resetToken                                     String?
+  resetTokenExpires                              DateTime?
+  verifiedAt                                     DateTime?
+  userType                                       UserType               @default(INDIVIDUAL)
+  Achievement                                    Achievement[]
+  AdminProfile                                   AdminProfile?
+  Badges                                         Badges[]
+  BadgesAndLevelEarned                           BadgesAndLevelEarned[]
+  Certificate                                    Certificate[]
+  Course                                         Course[]
+  Discussion                                     Discussion[]
+  DiscussionLike                                 DiscussionLike[]
+  Enrollment                                     Enrollment[]
+  Feedback                                       Feedback[]
+  Group                                          Group[]
+  InviteUser                                     InviteUser[]
+  JoinedGroup                                    JoinedGroup[]
+  Likes                                          Likes[]
+  Message                                        Message[]
+  Notification                                   Notification[]
+  Organization                                   Organization?
+  OrganizationMember                             OrganizationMember[]
+  PointHistory                                   PointHistory[]
+  PricingHistory                                 PricingHistory[]
+  PrivateMessage_PrivateMessage_receiverIdToUser PrivateMessage[]       @relation("PrivateMessage_receiverIdToUser")
+  PrivateMessage_PrivateMessage_senderIdToUser   PrivateMessage[]       @relation("PrivateMessage_senderIdToUser")
+  Progress                                       Progress[]
+  Reply                                          Reply[]
+  SavedCourses                                   SavedCourses[]
+  Settings                                       Settings[]
+  Waitlist                                       Waitlist?              @relation(fields: [waitlistId], references: [id])
+  UserAdditionalData                             UserAdditionalData?
+  UserSession                                    UserSession[]
+  posts                                          posts[]
+  quiz_attempts                                  quiz_attempts[]
+}
+
+model UserAdditionalData {
+  id                String   @id
+  organization_name String?
+  organization_role String?
+  organization_type String?
+  type              String?  @default("INDIVIDUAL")
+  userId            String   @unique
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime
+  User              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserSession {
+  id           String   @id
+  userId       String
+  deviceId     String   @unique
+  deviceType   String
+  accessToken  String?
+  refreshToken String
+  userType     String
+  createdAt    DateTime @default(now())
+  lastActive   DateTime
+  expiresAt    DateTime
+  isRevoked    Boolean  @default(false)
+  userAgent    String?
+  ipAddress    String?
+  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId])
+  @@index([expiresAt])
+  @@index([refreshToken])
+  @@index([userId])
+}
+
+model VideoTracker {
+  id                String         @id
+  videoFinished     Boolean        @default(false)
+  progressId        String?
+  lessonId          String?
+  courseId          String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime?
+  basedTimeTracking Tracking
+  videoTrackTime    Int
+  PointHistory      PointHistory[]
+  Course            Course?        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  Lesson            Lesson?        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  Progress          Progress?      @relation(fields: [progressId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, progressId])
+}
+
+model Waitlist {
+  id        String    @id
+  email     String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  status    String
+  User      User?
+}
+
+model posts {
+  id             String         @id
+  title          String
+  content        String
+  userId         String
+  createdAt      DateTime       @default(now())
+  courseId       String
+  organizationId String?
+  Likes          Likes[]
+  Notification   Notification[]
+  Reply          Reply[]
+  Course         Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  Organization   Organization?  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  User           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model questions {
+  id            String         @id
+  question      String
+  options       String[]
+  correctAnswer String
+  explanation   String?
+  points        Int            @default(1)
+  order         Int?
+  quizId        String
+  createdAt     DateTime       @default(now())
+  courseId      String?
+  quizAttemptId String?
+  Course        Course?        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  quiz_attempts quiz_attempts? @relation(fields: [quizAttemptId], references: [id], onDelete: Cascade)
+  quizzes       quizzes        @relation(fields: [quizId], references: [id], onDelete: Cascade)
+}
+
+model quiz_attempts {
+  id             String         @id
+  userId         String
+  quizId         String
+  score          Int
+  answers        Json
+  completed      Boolean        @default(false)
+  startedAt      DateTime       @default(now())
+  completedAt    DateTime?
+  courseId       String?
+  organizationId String?
+  progressId     String?
+  timeFinished   Int
+  PointHistory   PointHistory[]
+  questions      questions[]
+  Course         Course?        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  Organization   Organization?  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  Progress       Progress?      @relation(fields: [progressId], references: [id], onDelete: Cascade)
+  quizzes        quizzes        @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  User           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, quizId, courseId, organizationId])
+}
+
+model quizzes {
+  id             String          @id
+  title          String
+  description    String?
+  courseId       String
+  duration       Int?
+  passingScore   Int?            @default(70)
+  maxAttempts    Int?            @default(3)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime
+  organizationId String?
+  point          Int?            @default(0)
+  quizProgress   Int?
+  questions      questions[]
+  quiz_attempts  quiz_attempts[]
+  Course         Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  Organization   Organization?   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+enum BadgesEnum {
+  CADET_BADGE
+  COURSE_COMPLETION_BADGE
+  CONSISTENCY_BADGE
+  MASTERY_BADGE
+  MILESTONES_BADGES
+}
+
+enum Category {
+  PRAYER
+  DISCUSSION
+  DEVOTION
+  BLESSING
+  TESTIMONY
+  QUESTION
+}
+
+enum CertificateType {
+  COURSE
+  OTHER
+}
+
+enum EnrollmentStatus {
+  ENROLLED
+  IN_PROGRESS
+  COMPLETED
+  DROPPED
+  NOT_ENROLLED
+}
+
+enum FeedbackType {
+  COURSE
+  GROUP
+  OTHER
+}
+
+enum FormType {
+  ORGANIZATION
+  INDIVIDUAL
+  INVITED
+  ADMIN
+}
+
+enum JoinMethod {
+  CREATED
+  INVITE
+  WAITLIST
+}
+
+enum LanguageCode {
+  unknown
+  en
+  fr
+  es
+  pt
+  de
+  it
+  nl
+  zh_CN
+  zh_TW
+  ja
+  ko
+  hi
+  sw
+  yo
+  ig
+  ha
+  am
+}
+
+enum Levels {
+  LEVEL1_SEEKER
+  LEVEL2_LEARNER
+  LEVEL3_DISCIPLE
+  LEVEL4_AMBASSADOR
+  LEVEL5_MENTOR
+}
+
+enum MemberPlanType {
+  ORGANIZATION
+  INDIVIDUAL
+  INVITED_INDIVIDUAL
+}
+
+enum OrgType {
+  CHURCH
+  SCHOOL
+  CLUB
+  OTHER
+}
+
+enum PlanDuration {
+  FREE_PLAN
+  MONTHLY_PLAN
+  YEARLY_PLAN
+}
+
+enum Plans {
+  FREEMIUM_USER
+  INVITED_STUDENT_UNLIMITED
+  STUDENT_PLUS
+  STUDENT_UNLIMITED
+  TUTOR_PRO
+  TUTOR_ELITE
+  CHURCH_STARTER
+  CHURCH_GROWTH
+  CHURCH_ENTERPRISE
+  SCHOOL_STARTER
+  SCHOOL_GROWTH
+  SCHOOL_ENTERPRISE
+  CLUB_STARTER
+  CLUB_GROWTH
+  CLUB_ENTERPRISE
+}
+
+enum Provider {
+  GOOGLE
+  FACEBOOK
+  APPLE
+  OTHER
+}
+
+enum Tracking {
+  FIRST_TIME_TRACKING
+  SECOND_TIME_TRACKING
+}
+
+enum UserType {
+  INDIVIDUAL
+  ORGANIZATION_OWNER
+  INVITED_MEMBER
+  ADMIN
 }

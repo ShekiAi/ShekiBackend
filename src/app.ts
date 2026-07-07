@@ -9,7 +9,6 @@ import swaggerUi from "swagger-ui-express";
 import { ValidateError } from "tsoa";
 import { RegisterRoutes } from "./routes/routes";
 import "dotenv/config";
-
 dotenv.config();
 
 const app = express();
