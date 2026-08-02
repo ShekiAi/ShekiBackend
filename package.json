@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/server.ts",
-    "build": "prisma generate && tsc && tsoa spec && tsoa routes",
+    "build": "prisma generate && tsc && tsoa spec && tsoa routes && npm run sync-prisma-client",
     "start": "node dist/src/server.js",
-    "render-build": "prisma generate && tsc && tsoa spec && tsoa routes"
+    "render-build": "prisma generate && tsc && tsoa spec && tsoa routes && npm run sync-prisma-client",
+    "sync-prisma-client": "node -e \"require('fs').rmSync('dist/generated/prisma',{recursive:true,force:true});require('fs').cpSync('generated/prisma','dist/generated/prisma',{recursive:true})\""
   },
   "repository": {
     "type": "git",
