@@ -8,6 +8,8 @@ import dotenv from "dotenv";
 import swaggerUi from "swagger-ui-express";
 import { ValidateError } from "tsoa";
 import { RegisterRoutes } from "./routes/routes";
+import { requireServiceKey } from "./middleware/requireServiceKey";
+import { VoiceAIService } from "./services/AI_Services/voice_service";
 import "dotenv/config";
 dotenv.config();
 
@@ -121,6 +123,27 @@ const apiRouter = express.Router();
 
 // Register all tsoa routes on the apiRouter
 RegisterRoutes(apiRouter);
+
+// Raw-binary TTS endpoint, kept outside tsoa: tsoa's generated route handlers
+// always serialize the controller's return value as JSON, which doesn't fit
+// returning actual audio/mpeg bytes. Gated by the same service key as the
+// rest of the course-draft API.
+apiRouter.post("/ai_v1/course-draft/voice/speak", requireServiceKey, json(), async (req: ExRequest, res: ExResponse) => {
+  const { text, voice } = req.body as { text?: string; voice?: string };
+  if (!text || !text.trim()) {
+    return res.status(400).json({ message: "text is required", data: [], status: 400, error: ["text is required"] });
+  }
+  if (text.length > 2000) {
+    return res.status(400).json({ message: "text must be 2000 characters or fewer", data: [], status: 400, error: ["text too long"] });
+  }
+  try {
+    const audio = await VoiceAIService.speak(text, voice);
+    res.set("Content-Type", "audio/wav");
+    res.send(audio);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message, data: [], status: 500, error: [error.message] });
+  }
+});
 
 // Mount the apiRouter at /api/v1 path
 app.use("/api/v1", apiRouter);

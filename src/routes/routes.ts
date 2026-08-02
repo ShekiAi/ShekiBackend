@@ -6,6 +6,8 @@ import {  fetchMiddlewares, ExpressTemplateService } from '@tsoa/runtime';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { UserController } from './../controllers/UserController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { CourseDraftController } from './../controllers/CourseDraftController';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { AIController } from './../controllers/AIController';
 import { expressAuthentication } from './../middleware/auth';
 // @ts-ignore - no great way to install types from subpackage
@@ -63,6 +65,221 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'health',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsCourseDraftController_Start: Record<string, TsoaRoute.ParameterSchema> = {
+                body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"message":{"dataType":"string"},"tutorName":{"dataType":"string","required":true},"tutorId":{"dataType":"string","required":true}}},
+        };
+        app.post('/ai_v1/course-draft/start',
+            ...(fetchMiddlewares<RequestHandler>(CourseDraftController)),
+            ...(fetchMiddlewares<RequestHandler>(CourseDraftController.prototype.Start)),
+
+            async function CourseDraftController_Start(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsCourseDraftController_Start, request, response });
+
+                const controller = new CourseDraftController();
+
+              await templateService.apiHandler({
+                methodName: 'Start',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsCourseDraftController_Message: Record<string, TsoaRoute.ParameterSchema> = {
+                sessionId: {"in":"path","name":"sessionId","required":true,"dataType":"string"},
+                body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"message":{"dataType":"string","required":true},"tutorName":{"dataType":"string","required":true},"tutorId":{"dataType":"string","required":true}}},
+        };
+        app.post('/ai_v1/course-draft/:sessionId/message',
+            ...(fetchMiddlewares<RequestHandler>(CourseDraftController)),
+            ...(fetchMiddlewares<RequestHandler>(CourseDraftController.prototype.Message)),
+
+            async function CourseDraftController_Message(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsCourseDraftController_Message, request, response });
+
+                const controller = new CourseDraftController();
+
+              await templateService.apiHandler({
+                methodName: 'Message',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsCourseDraftController_VoiceMessage: Record<string, TsoaRoute.ParameterSchema> = {
+                sessionId: {"in":"path","name":"sessionId","required":true,"dataType":"string"},
+                request: {"in":"request","name":"request","required":true,"dataType":"object"},
+        };
+        app.post('/ai_v1/course-draft/:sessionId/voice-message',
+            ...(fetchMiddlewares<RequestHandler>(CourseDraftController)),
+            ...(fetchMiddlewares<RequestHandler>(CourseDraftController.prototype.VoiceMessage)),
+
+            async function CourseDraftController_VoiceMessage(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsCourseDraftController_VoiceMessage, request, response });
+
+                const controller = new CourseDraftController();
+
+              await templateService.apiHandler({
+                methodName: 'VoiceMessage',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsCourseDraftController_GetSession: Record<string, TsoaRoute.ParameterSchema> = {
+                sessionId: {"in":"path","name":"sessionId","required":true,"dataType":"string"},
+                tutorId: {"in":"query","name":"tutorId","required":true,"dataType":"string"},
+        };
+        app.get('/ai_v1/course-draft/:sessionId',
+            ...(fetchMiddlewares<RequestHandler>(CourseDraftController)),
+            ...(fetchMiddlewares<RequestHandler>(CourseDraftController.prototype.GetSession)),
+
+            async function CourseDraftController_GetSession(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsCourseDraftController_GetSession, request, response });
+
+                const controller = new CourseDraftController();
+
+              await templateService.apiHandler({
+                methodName: 'GetSession',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsCourseDraftController_ListMine: Record<string, TsoaRoute.ParameterSchema> = {
+                tutorId: {"in":"query","name":"tutorId","required":true,"dataType":"string"},
+        };
+        app.get('/ai_v1/course-draft/mine/list',
+            ...(fetchMiddlewares<RequestHandler>(CourseDraftController)),
+            ...(fetchMiddlewares<RequestHandler>(CourseDraftController.prototype.ListMine)),
+
+            async function CourseDraftController_ListMine(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsCourseDraftController_ListMine, request, response });
+
+                const controller = new CourseDraftController();
+
+              await templateService.apiHandler({
+                methodName: 'ListMine',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsCourseDraftController_Finalize: Record<string, TsoaRoute.ParameterSchema> = {
+                sessionId: {"in":"path","name":"sessionId","required":true,"dataType":"string"},
+                body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"tutorId":{"dataType":"string","required":true}}},
+        };
+        app.post('/ai_v1/course-draft/:sessionId/finalize',
+            ...(fetchMiddlewares<RequestHandler>(CourseDraftController)),
+            ...(fetchMiddlewares<RequestHandler>(CourseDraftController.prototype.Finalize)),
+
+            async function CourseDraftController_Finalize(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsCourseDraftController_Finalize, request, response });
+
+                const controller = new CourseDraftController();
+
+              await templateService.apiHandler({
+                methodName: 'Finalize',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsCourseDraftController_Abandon: Record<string, TsoaRoute.ParameterSchema> = {
+                sessionId: {"in":"path","name":"sessionId","required":true,"dataType":"string"},
+                body: {"in":"body","name":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"tutorId":{"dataType":"string","required":true}}},
+        };
+        app.post('/ai_v1/course-draft/:sessionId/abandon',
+            ...(fetchMiddlewares<RequestHandler>(CourseDraftController)),
+            ...(fetchMiddlewares<RequestHandler>(CourseDraftController.prototype.Abandon)),
+
+            async function CourseDraftController_Abandon(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsCourseDraftController_Abandon, request, response });
+
+                const controller = new CourseDraftController();
+
+              await templateService.apiHandler({
+                methodName: 'Abandon',
                 controller,
                 response,
                 next,

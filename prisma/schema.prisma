@@ -143,12 +143,16 @@ model Course {
   updatedAt                DateTime
   point                    Int?                   @default(0)
   savedCoursesId           String?
+  aiGenerated              Boolean                @default(false)
+  pendingMaterials         Json?
+  status                   String                 @default("PUBLISHED")
   Achievement              Achievement[]
   BadgesAndLevelEarned     BadgesAndLevelEarned[]
   Certificate              Certificate[]
   User                     User                   @relation(fields: [createdUserId], references: [id], onDelete: Cascade)
   Organization             Organization?          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   Progress                 Progress?              @relation(fields: [progressId], references: [id], onDelete: Cascade)
+  CourseDraftSession       CourseDraftSession?
   Enrollment               Enrollment[]
   Material                 Material[]
   Module                   Module[]
@@ -366,6 +370,7 @@ model Module {
   createdAt          DateTime @default(now())
   order              Int?     @default(0)
   updatedAt          DateTime
+  pendingLessons     Json?
   Lesson             Lesson[]
   Course             Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 }
@@ -445,6 +450,7 @@ model Organization {
   resetToken                 String?
   resetTokenExpires          DateTime?
   organization_name          String
+  isSuspended                Boolean              @default(false)
   Certificate                Certificate[]
   Church_Organization        Church_Organization?
   Club_Organization          Club_Organization?
@@ -454,11 +460,13 @@ model Organization {
   InviteUser                 InviteUser[]
   Notification               Notification[]
   User                       User?                @relation(fields: [userId], references: [id])
+  OrganizationEvent          OrganizationEvent[]
   OrganizationMember         OrganizationMember[]
   PointHistory               PointHistory[]
   PricingHistory             PricingHistory[]
   School_Organization        School_Organization?
   Settings                   Settings[]
+  UserSession                UserSession[]
   posts                      posts[]
   quiz_attempts              quiz_attempts[]
   quizzes                    quizzes[]
@@ -676,15 +684,18 @@ model User {
   resetTokenExpires                              DateTime?
   verifiedAt                                     DateTime?
   userType                                       UserType               @default(INDIVIDUAL)
+  isSuspended                                    Boolean                @default(false)
   Achievement                                    Achievement[]
   AdminProfile                                   AdminProfile?
   Badges                                         Badges[]
   BadgesAndLevelEarned                           BadgesAndLevelEarned[]
   Certificate                                    Certificate[]
   Course                                         Course[]
+  CourseDraftSession                             CourseDraftSession[]
   Discussion                                     Discussion[]
   DiscussionLike                                 DiscussionLike[]
   Enrollment                                     Enrollment[]
+  EventAttendee                                  EventAttendee[]
   Feedback                                       Feedback[]
   Group                                          Group[]
   InviteUser                                     InviteUser[]
@@ -693,6 +704,7 @@ model User {
   Message                                        Message[]
   Notification                                   Notification[]
   Organization                                   Organization?
+  OrganizationEvent                              OrganizationEvent[]
   OrganizationMember                             OrganizationMember[]
   PointHistory                                   PointHistory[]
   PricingHistory                                 PricingHistory[]
@@ -722,25 +734,28 @@ model UserAdditionalData {
 }
 
 model UserSession {
-  id           String   @id
-  userId       String
-  deviceId     String   @unique
-  deviceType   String
-  accessToken  String?
-  refreshToken String
-  userType     String
-  createdAt    DateTime @default(now())
-  lastActive   DateTime
-  expiresAt    DateTime
-  isRevoked    Boolean  @default(false)
-  userAgent    String?
-  ipAddress    String?
-  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String        @id
+  userId         String
+  deviceId       String        @unique
+  deviceType     String
+  accessToken    String?
+  refreshToken   String
+  userType       String
+  createdAt      DateTime      @default(now())
+  lastActive     DateTime
+  expiresAt      DateTime
+  isRevoked      Boolean       @default(false)
+  userAgent      String?
+  ipAddress      String?
+  organizationId String?
+  Organization   Organization? @relation(fields: [organizationId], references: [id])
+  User           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([deviceId])
   @@index([expiresAt])
   @@index([refreshToken])
   @@index([userId])
+  @@index([organizationId])
 }
 
 model VideoTracker {
@@ -844,6 +859,68 @@ model quizzes {
   quiz_attempts  quiz_attempts[]
   Course         Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
   Organization   Organization?   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model CourseDraftMessage {
+  id                 String             @id
+  sessionId          String
+  role               String
+  content            String?
+  toolCallId         String?
+  toolName           String?
+  toolArgs           Json?
+  audioUrl           String?
+  createdAt          DateTime           @default(now())
+  CourseDraftSession CourseDraftSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+}
+
+model CourseDraftSession {
+  id                 String               @id
+  tutorId            String
+  status             String               @default("ACTIVE")
+  draftJson          Json
+  courseId           String?              @unique
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime
+  lastActivityAt     DateTime             @default(now())
+  CourseDraftMessage CourseDraftMessage[]
+  Course             Course?              @relation(fields: [courseId], references: [id])
+  User               User                 @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@index([tutorId, status])
+}
+
+model EventAttendee {
+  id                String            @id
+  eventId           String
+  userId            String
+  status            String            @default("registered")
+  joinedAt          DateTime          @default(now())
+  OrganizationEvent OrganizationEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  User              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+
+model OrganizationEvent {
+  id             String          @id
+  name           String
+  description    String?
+  date           DateTime
+  time           String
+  location       String?
+  capacity       Int             @default(100)
+  type           String          @default("general")
+  status         String          @default("upcoming")
+  organizationId String
+  createdBy      String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime
+  EventAttendee  EventAttendee[]
+  User           User            @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  Organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 }
 
 enum BadgesEnum {
