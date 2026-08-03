@@ -340,6 +340,37 @@
                 }
             }
         },
+        "/ai_v1/mentor-match/{sessionId}/document": {
+            "post": {
+                "operationId": "Document",
+                "responses": {
+                    "200": {
+                        "description": "Ok",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/APIResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Mentor Match AI"
+                ],
+                "security": [],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "sessionId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/ai_v1/course-draft/start": {
             "post": {
                 "operationId": "Start",
@@ -641,6 +672,37 @@
                         }
                     }
                 }
+            }
+        },
+        "/ai_v1/course-draft/{sessionId}/document": {
+            "post": {
+                "operationId": "Document",
+                "responses": {
+                    "200": {
+                        "description": "Ok",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/APIResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Course Draft AI"
+                ],
+                "security": [],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "sessionId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
             }
         },
         "/ai_v1/ai-health": {
