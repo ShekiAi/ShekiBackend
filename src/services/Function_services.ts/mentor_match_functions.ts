@@ -8,7 +8,7 @@ import { prisma } from "../../db";
 
 export interface MentorMatchState {
   studentQuery?: string;
-  candidates?: { id: string; name: string; bio: string | null; church_role: string | null; courseTopics: string[] }[];
+  candidates?: { id: string; name: string; bio: string | null; church_role: string | null; courses: { id: string; title: string }[] }[];
   matchedTutor?: { id: string; name: string; reason: string };
   noMatchReason?: string;
 }
@@ -42,7 +42,7 @@ export async function applyMentorMatchToolMutation(sessionId: string, toolName: 
           last_name: true,
           bio: true,
           church_role: true,
-          Course: { select: { course_title: true, course_short_description: true } },
+          Course: { select: { id: true, course_title: true, course_short_description: true } },
         },
         take: 25,
       });
@@ -52,7 +52,7 @@ export async function applyMentorMatchToolMutation(sessionId: string, toolName: 
         name: `${t.first_name} ${t.last_name}`.trim(),
         bio: t.bio,
         church_role: t.church_role,
-        courseTopics: t.Course.map((c) => c.course_title),
+        courses: t.Course.map((c) => ({ id: c.id, title: c.course_title })),
       }));
 
       state.studentQuery = args.query;
