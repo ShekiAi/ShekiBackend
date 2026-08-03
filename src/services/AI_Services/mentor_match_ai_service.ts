@@ -10,6 +10,7 @@ import {
   recoverCompletionFromError,
   stripFunctionTags,
 } from "../../utils/groq_admin/malformed_tool_calls";
+import { friendlyGroqMessage } from "../../utils/groq_admin/friendly_error";
 import { applyMentorMatchToolMutation, MentorMatchState, emptyMentorMatchState } from "../Function_services.ts/mentor_match_functions";
 import { createSession, getSession, listSessions, setSessionStatus, appendMessage, loadMessages } from "../Function_services.ts/course_draft_session_functions";
 
@@ -91,7 +92,13 @@ async function runTurn(sessionId: string, studentName: string): Promise<TurnResu
   let round = 0;
 
   while (round < MAX_ROUNDS) {
-    const response = await createCompletionWithRetry(messages);
+    let response: any;
+    try {
+      response = await createCompletionWithRetry(messages);
+    } catch (error: any) {
+      console.error(`[MentorMatch/${sessionId}] Groq completion failed:`, error?.message || error);
+      throw new Error(friendlyGroqMessage(error));
+    }
     const message = response.choices[0].message;
 
     if (!message.tool_calls || message.tool_calls.length === 0) {

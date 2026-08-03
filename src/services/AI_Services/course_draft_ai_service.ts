@@ -10,6 +10,7 @@ import {
   recoverCompletionFromError,
   stripFunctionTags,
 } from "../../utils/groq_admin/malformed_tool_calls";
+import { friendlyGroqMessage } from "../../utils/groq_admin/friendly_error";
 import {
   createSession,
   getSession,
@@ -121,7 +122,13 @@ async function runTurn(sessionId: string, tutorName: string): Promise<TurnResult
   let round = 0;
 
   while (round < MAX_ROUNDS) {
-    const response = await createCompletionWithRetry(messages);
+    let response: any;
+    try {
+      response = await createCompletionWithRetry(messages);
+    } catch (error: any) {
+      console.error(`[CourseDraft/${sessionId}] Groq completion failed:`, error?.message || error);
+      throw new Error(friendlyGroqMessage(error));
+    }
 
     const message = response.choices[0].message;
 
