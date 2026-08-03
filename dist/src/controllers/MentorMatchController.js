@@ -19,6 +19,7 @@ const voice_service_1 = require("../services/AI_Services/voice_service");
 const requireServiceKey_1 = require("../middleware/requireServiceKey");
 const upload_1 = require("../middleware/upload");
 const progressEmitter_1 = require("../realtime/progressEmitter");
+const extract_text_1 = require("../utils/documents/extract_text");
 // Same shared-service-key architecture as CourseDraftController — GOYE's
 // backend is the sole caller, already having verified the student's
 // identity itself. When the AI proposes a match (result.matchedTutor is
@@ -104,6 +105,31 @@ let MentorMatchController = class MentorMatchController extends tsoa_1.Controlle
             return { message: error.message, data: [], status: 404, error: [error.message] };
         }
     }
+    // The document's text is fed in as the user's own turn, so the assistant
+    // treats it as context they provided rather than something it invented.
+    async Document(sessionId, request) {
+        try {
+            const file = request.file;
+            const { studentId, studentName } = request.body;
+            if (!file)
+                throw new Error("No document provided (expected multipart field 'document')");
+            if (!studentId || !studentName)
+                throw new Error("studentId and studentName are required form fields");
+            (0, progressEmitter_1.emitProgress)(sessionId, "reading_document", { filename: file.originalname });
+            const { text, truncated } = await (0, extract_text_1.extractDocumentText)(file.buffer, file.originalname || "", file.mimetype);
+            const preamble = `I'm sharing a document called "${file.originalname}"${truncated ? " (only the first part is included, it's a long one)" : ""}. Here are its contents:
+
+${text}`;
+            const result = await mentor_match_ai_service_1.MentorMatchAIService.continueSession(sessionId, studentId, studentName, preamble);
+            this.setStatus(200);
+            return { message: "Success", data: [{ filename: file.originalname, truncated, ...result }], status: 200, error: [] };
+        }
+        catch (error) {
+            (0, progressEmitter_1.emitProgress)(sessionId, "error", { message: error.message });
+            this.setStatus(400);
+            return { message: error.message, data: [], status: 400, error: [error.message] };
+        }
+    }
 };
 exports.MentorMatchController = MentorMatchController;
 __decorate([
@@ -153,6 +179,15 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], MentorMatchController.prototype, "Abandon", null);
+__decorate([
+    (0, tsoa_1.Post)("{sessionId}/document"),
+    (0, tsoa_1.Middlewares)(upload_1.documentUpload.single("document")),
+    __param(0, (0, tsoa_1.Path)()),
+    __param(1, (0, tsoa_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], MentorMatchController.prototype, "Document", null);
 exports.MentorMatchController = MentorMatchController = __decorate([
     (0, tsoa_1.Middlewares)(requireServiceKey_1.requireServiceKey),
     (0, tsoa_1.Tags)("Mentor Match AI"),

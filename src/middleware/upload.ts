@@ -15,3 +15,18 @@ export const audioUpload = multer({
     }
   },
 });
+
+const MAX_DOC_BYTES = 20 * 1024 * 1024; // 20MB
+const ALLOWED_DOC_EXT = /\.(pdf|docx|doc|txt|md)$/i;
+
+export const documentUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_DOC_BYTES },
+  fileFilter: (_req, file, cb) => {
+    // Trust the extension as well as the mimetype — browsers report
+    // inconsistent types for .md/.docx, and rejecting on mimetype alone
+    // turned away legitimate files.
+    if (ALLOWED_DOC_EXT.test(file.originalname || "")) cb(null, true);
+    else cb(new Error("Please upload a PDF, DOCX, TXT or MD file."));
+  },
+});

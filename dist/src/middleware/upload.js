@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.audioUpload = void 0;
+exports.documentUpload = exports.audioUpload = void 0;
 // middleware/upload.ts
 const multer_1 = __importDefault(require("multer"));
 const ALLOWED_MIME_PREFIXES = ["audio/"];
@@ -18,6 +18,21 @@ exports.audioUpload = (0, multer_1.default)({
         else {
             cb(new Error(`Unsupported file type: ${file.mimetype}. Only audio files are accepted.`));
         }
+    },
+});
+const MAX_DOC_BYTES = 20 * 1024 * 1024; // 20MB
+const ALLOWED_DOC_EXT = /\.(pdf|docx|doc|txt|md)$/i;
+exports.documentUpload = (0, multer_1.default)({
+    storage: multer_1.default.memoryStorage(),
+    limits: { fileSize: MAX_DOC_BYTES },
+    fileFilter: (_req, file, cb) => {
+        // Trust the extension as well as the mimetype — browsers report
+        // inconsistent types for .md/.docx, and rejecting on mimetype alone
+        // turned away legitimate files.
+        if (ALLOWED_DOC_EXT.test(file.originalname || ""))
+            cb(null, true);
+        else
+            cb(new Error("Please upload a PDF, DOCX, TXT or MD file."));
     },
 });
 //# sourceMappingURL=upload.js.map

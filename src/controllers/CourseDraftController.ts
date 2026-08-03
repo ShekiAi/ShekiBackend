@@ -5,8 +5,9 @@ import { CourseDraftAIService } from "../services/AI_Services/course_draft_ai_se
 import { VoiceAIService } from "../services/AI_Services/voice_service";
 import { finalizeDraftToCourse } from "../services/Function_services.ts/course_draft_finalize_functions";
 import { requireServiceKey } from "../middleware/requireServiceKey";
-import { audioUpload } from "../middleware/upload";
+import { audioUpload, documentUpload } from "../middleware/upload";
 import { emitProgress } from "../realtime/progressEmitter";
+import { extractDocumentText } from "../utils/documents/extract_text";
 
 // Gated by a shared X-Service-Key header (requireServiceKey) rather than a
 // per-tutor JWT: GOYE's own backend is the caller here (confirmed
@@ -123,4 +124,35 @@ export class CourseDraftController extends Controller {
       return { message: error.message, data: [], status: 404, error: [error.message] };
     }
   }
+
+  // The document's text is fed in as the user's own turn, so the assistant
+  // treats it as context they provided rather than something it invented.
+  @Post("{sessionId}/document")
+  @Middlewares(documentUpload.single("document"))
+  public async Document(@Path() sessionId: string, @Request() request: ExRequest): Promise<APIResponse> {
+    try {
+      const file = (request as any).file as Express.Multer.File | undefined;
+      const { tutorId, tutorName } = request.body as { tutorId?: string; tutorName?: string };
+      if (!file) throw new Error("No document provided (expected multipart field 'document')");
+      if (!tutorId || !tutorName) throw new Error("tutorId and tutorName are required form fields");
+
+      emitProgress(sessionId, "reading_document", { filename: file.originalname });
+      const { text, truncated } = await extractDocumentText(file.buffer, file.originalname || "", file.mimetype);
+
+      const preamble = `I'm sharing a document called "${file.originalname}"${
+        truncated ? " (only the first part is included, it's a long one)" : ""
+      }. Here are its contents:
+
+${text}`;
+
+      const result = await CourseDraftAIService.continueSession(sessionId, tutorId, tutorName, preamble);
+      this.setStatus(200);
+      return { message: "Success", data: [{ filename: file.originalname, truncated, ...result }], status: 200, error: [] };
+    } catch (error: any) {
+      emitProgress(sessionId, "error", { message: error.message });
+      this.setStatus(400);
+      return { message: error.message, data: [], status: 400, error: [error.message] };
+    }
+  }
+
 }

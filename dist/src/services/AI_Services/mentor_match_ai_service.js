@@ -6,49 +6,12 @@ const groq_1 = require("../../utils/groq_admin/groq");
 const mentor_match_tools_1 = require("../../utils/tools/mentor_match_tools");
 const prompt_1 = require("../../utils/prompt/prompt");
 const progressEmitter_1 = require("../../realtime/progressEmitter");
+const malformed_tool_calls_1 = require("../../utils/groq_admin/malformed_tool_calls");
 const mentor_match_functions_1 = require("../Function_services.ts/mentor_match_functions");
-const crypto_1 = require("crypto");
 const course_draft_session_functions_1 = require("../Function_services.ts/course_draft_session_functions");
 const MODEL = "llama-3.3-70b-versatile";
 const MAX_ROUNDS = 10; // matching needs far fewer tool calls than a full course build
 const MAX_COMPLETION_RETRIES = 2;
-// Llama-3.3-70b via Groq sometimes lapses into an alternate native
-// tool-call syntax Meta's own models were trained on —
-// `<function=name{args}</function>` — which Groq's API itself rejects as
-// tool_use_failed before it ever reaches application code. As a second
-// line of defense beyond retrying, parse the rejected generation and
-// recover the real tool call directly rather than losing the turn.
-//
-// NOTE: groq-sdk's APIError nests the API's own JSON body one level
-// deeper than it looks — error.error is the raw response body, itself
-// shaped {error: {code, message, failed_generation}} — so the real
-// fields live at error.error.error.*, not error.error.*. Verified live by
-// dumping a captured error's actual JSON; a shallower check here (or in
-// the retry-detection below) silently never matches.
-function tryRecoverMalformedToolCall(error) {
-    const raw = error?.error?.error?.failed_generation || error?.error?.failed_generation || error?.failed_generation || "";
-    const match = raw.match(/<function=([a-zA-Z_][\w]*)\s*(\{[\s\S]*?\})\s*<\/function>/);
-    if (!match)
-        return null;
-    const [, name, argsJson] = match;
-    try {
-        JSON.parse(argsJson); // validate before trusting it
-    }
-    catch {
-        return null;
-    }
-    return {
-        choices: [
-            {
-                message: {
-                    role: "assistant",
-                    content: null,
-                    tool_calls: [{ id: `call_${(0, crypto_1.randomUUID)()}`, type: "function", function: { name, arguments: argsJson } }],
-                },
-            },
-        ],
-    };
-}
 async function createCompletionWithRetry(messages) {
     let lastError;
     for (let attempt = 0; attempt <= MAX_COMPLETION_RETRIES; attempt++) {
@@ -63,10 +26,9 @@ async function createCompletionWithRetry(messages) {
         }
         catch (error) {
             lastError = error;
-            const isToolUseFailed = error?.error?.error?.code === "tool_use_failed" || error?.error?.code === "tool_use_failed" || error?.code === "tool_use_failed";
-            if (!isToolUseFailed)
+            if (!(0, malformed_tool_calls_1.isToolUseFailedError)(error))
                 throw error;
-            const recovered = tryRecoverMalformedToolCall(error);
+            const recovered = (0, malformed_tool_calls_1.recoverCompletionFromError)(error);
             if (recovered)
                 return recovered;
             if (attempt === MAX_COMPLETION_RETRIES)
@@ -118,8 +80,21 @@ async function runTurn(sessionId, studentName) {
         const response = await createCompletionWithRetry(messages);
         const message = response.choices[0].message;
         if (!message.tool_calls || message.tool_calls.length === 0) {
-            finalText = message.content || "";
-            await (0, course_draft_session_functions_1.appendMessage)(sessionId, { role: "assistant", content: finalText });
+            // The model sometimes writes a tool call as plain prose instead of
+            // calling it (Groq passes this through rather than erroring) — that raw
+            // tag reached a real user's screen. Treat it as the call it meant to be.
+            const leaked = (0, malformed_tool_calls_1.parseFunctionTag)(message.content);
+            if (leaked) {
+                message.tool_calls = [leaked];
+                message.content = (0, malformed_tool_calls_1.stripFunctionTags)(message.content) || null;
+            }
+            else {
+                finalText = message.content || "";
+                await (0, course_draft_session_functions_1.appendMessage)(sessionId, { role: "assistant", content: finalText });
+                break;
+            }
+        }
+        if (!message.tool_calls || message.tool_calls.length === 0) {
             break;
         }
         await (0, course_draft_session_functions_1.appendMessage)(sessionId, {
@@ -180,6 +155,11 @@ async function runTurn(sessionId, studentName) {
     }
     const state = await getDraftSnapshotGeneric(sessionId);
     const session = await (0, course_draft_session_functions_1.getSession)(sessionId);
+    // Last line of defense: never let a malformed tool-call tag reach the UI,
+    // even if it wasn't parseable enough to execute as a real call.
+    if ((0, malformed_tool_calls_1.containsFunctionTag)(finalText)) {
+        finalText = (0, malformed_tool_calls_1.stripFunctionTags)(finalText) || "Let me look into that for you.";
+    }
     if (finalText) {
         (0, progressEmitter_1.emitProgress)(sessionId, "assistant_reply", { text: finalText });
     }

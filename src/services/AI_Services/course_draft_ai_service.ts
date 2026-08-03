@@ -4,6 +4,13 @@ import { getCourseDraftTools } from "../../utils/tools/course_draft_tools";
 import { COURSE_DRAFT_SYSTEM_PROMPT, COURSE_DRAFT_WELCOME_MESSAGE } from "../../utils/prompt/prompt";
 import { emitProgress } from "../../realtime/progressEmitter";
 import {
+  containsFunctionTag,
+  isToolUseFailedError,
+  parseFunctionTag,
+  recoverCompletionFromError,
+  stripFunctionTags,
+} from "../../utils/groq_admin/malformed_tool_calls";
+import {
   createSession,
   getSession,
   listSessions,
@@ -49,17 +56,12 @@ async function createCompletionWithRetry(messages: any[]): Promise<any> {
       });
     } catch (error: any) {
       lastError = error;
-      // groq-sdk's APIError wraps the API's own JSON body one level deeper
-      // than it looks: error.error is the raw response body, itself shaped
-      // {error: {code, message, failed_generation}} — so the real code is
-      // at error.error.error.code, not error.error.code. Verified live by
-      // dumping Object.keys/JSON of a real captured error; the shallower
-      // check below silently never matched, so this retry never actually
-      // fired despite looking like it did (the delay was just one normal
-      // call, not several).
-      const isToolUseFailed =
-        error?.error?.error?.code === "tool_use_failed" || error?.error?.code === "tool_use_failed" || error?.code === "tool_use_failed";
-      if (!isToolUseFailed || attempt === MAX_COMPLETION_RETRIES) throw error;
+      if (!isToolUseFailedError(error)) throw error;
+
+      const recovered = recoverCompletionFromError(error);
+      if (recovered) return recovered;
+
+      if (attempt === MAX_COMPLETION_RETRIES) throw error;
     }
   }
   throw lastError;
@@ -124,8 +126,21 @@ async function runTurn(sessionId: string, tutorName: string): Promise<TurnResult
     const message = response.choices[0].message;
 
     if (!message.tool_calls || message.tool_calls.length === 0) {
-      finalText = message.content || "";
-      await appendMessage(sessionId, { role: "assistant", content: finalText });
+      // The model sometimes writes a tool call as plain prose instead of
+      // calling it (Groq passes this through rather than erroring) — that raw
+      // tag reached a real user's screen. Treat it as the call it meant to be.
+      const leaked = parseFunctionTag(message.content);
+      if (leaked) {
+        message.tool_calls = [leaked];
+        message.content = stripFunctionTags(message.content) || null;
+      } else {
+        finalText = message.content || "";
+        await appendMessage(sessionId, { role: "assistant", content: finalText });
+        break;
+      }
+    }
+
+    if (!message.tool_calls || message.tool_calls.length === 0) {
       break;
     }
 
@@ -194,6 +209,12 @@ async function runTurn(sessionId: string, tutorName: string): Promise<TurnResult
 
   const draft = await getDraftSnapshot(sessionId);
   const session = await getSession(sessionId);
+
+  // Last line of defense: never let a malformed tool-call tag reach the UI,
+  // even if it wasn't parseable enough to execute as a real call.
+  if (containsFunctionTag(finalText)) {
+    finalText = stripFunctionTags(finalText) || "Let me look into that for you.";
+  }
 
   if (finalText) {
     emitProgress(sessionId, "assistant_reply", { text: finalText });

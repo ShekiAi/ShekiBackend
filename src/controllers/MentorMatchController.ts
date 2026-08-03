@@ -4,8 +4,9 @@ import { APIResponse } from "../interface/ResponseInterface";
 import { MentorMatchAIService } from "../services/AI_Services/mentor_match_ai_service";
 import { VoiceAIService } from "../services/AI_Services/voice_service";
 import { requireServiceKey } from "../middleware/requireServiceKey";
-import { audioUpload } from "../middleware/upload";
+import { audioUpload, documentUpload } from "../middleware/upload";
 import { emitProgress } from "../realtime/progressEmitter";
+import { extractDocumentText } from "../utils/documents/extract_text";
 
 // Same shared-service-key architecture as CourseDraftController — GOYE's
 // backend is the sole caller, already having verified the student's
@@ -104,4 +105,35 @@ export class MentorMatchController extends Controller {
       return { message: error.message, data: [], status: 404, error: [error.message] };
     }
   }
+
+  // The document's text is fed in as the user's own turn, so the assistant
+  // treats it as context they provided rather than something it invented.
+  @Post("{sessionId}/document")
+  @Middlewares(documentUpload.single("document"))
+  public async Document(@Path() sessionId: string, @Request() request: ExRequest): Promise<APIResponse> {
+    try {
+      const file = (request as any).file as Express.Multer.File | undefined;
+      const { studentId, studentName } = request.body as { studentId?: string; studentName?: string };
+      if (!file) throw new Error("No document provided (expected multipart field 'document')");
+      if (!studentId || !studentName) throw new Error("studentId and studentName are required form fields");
+
+      emitProgress(sessionId, "reading_document", { filename: file.originalname });
+      const { text, truncated } = await extractDocumentText(file.buffer, file.originalname || "", file.mimetype);
+
+      const preamble = `I'm sharing a document called "${file.originalname}"${
+        truncated ? " (only the first part is included, it's a long one)" : ""
+      }. Here are its contents:
+
+${text}`;
+
+      const result = await MentorMatchAIService.continueSession(sessionId, studentId, studentName, preamble);
+      this.setStatus(200);
+      return { message: "Success", data: [{ filename: file.originalname, truncated, ...result }], status: 200, error: [] };
+    } catch (error: any) {
+      emitProgress(sessionId, "error", { message: error.message });
+      this.setStatus(400);
+      return { message: error.message, data: [], status: 400, error: [error.message] };
+    }
+  }
+
 }

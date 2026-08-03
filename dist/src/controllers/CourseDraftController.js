@@ -20,6 +20,7 @@ const course_draft_finalize_functions_1 = require("../services/Function_services
 const requireServiceKey_1 = require("../middleware/requireServiceKey");
 const upload_1 = require("../middleware/upload");
 const progressEmitter_1 = require("../realtime/progressEmitter");
+const extract_text_1 = require("../utils/documents/extract_text");
 // Gated by a shared X-Service-Key header (requireServiceKey) rather than a
 // per-tutor JWT: GOYE's own backend is the caller here (confirmed
 // architecture), and it has already verified the tutor's identity via its
@@ -120,6 +121,31 @@ let CourseDraftController = class CourseDraftController extends tsoa_1.Controlle
             return { message: error.message, data: [], status: 404, error: [error.message] };
         }
     }
+    // The document's text is fed in as the user's own turn, so the assistant
+    // treats it as context they provided rather than something it invented.
+    async Document(sessionId, request) {
+        try {
+            const file = request.file;
+            const { tutorId, tutorName } = request.body;
+            if (!file)
+                throw new Error("No document provided (expected multipart field 'document')");
+            if (!tutorId || !tutorName)
+                throw new Error("tutorId and tutorName are required form fields");
+            (0, progressEmitter_1.emitProgress)(sessionId, "reading_document", { filename: file.originalname });
+            const { text, truncated } = await (0, extract_text_1.extractDocumentText)(file.buffer, file.originalname || "", file.mimetype);
+            const preamble = `I'm sharing a document called "${file.originalname}"${truncated ? " (only the first part is included, it's a long one)" : ""}. Here are its contents:
+
+${text}`;
+            const result = await course_draft_ai_service_1.CourseDraftAIService.continueSession(sessionId, tutorId, tutorName, preamble);
+            this.setStatus(200);
+            return { message: "Success", data: [{ filename: file.originalname, truncated, ...result }], status: 200, error: [] };
+        }
+        catch (error) {
+            (0, progressEmitter_1.emitProgress)(sessionId, "error", { message: error.message });
+            this.setStatus(400);
+            return { message: error.message, data: [], status: 400, error: [error.message] };
+        }
+    }
 };
 exports.CourseDraftController = CourseDraftController;
 __decorate([
@@ -177,6 +203,15 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], CourseDraftController.prototype, "Abandon", null);
+__decorate([
+    (0, tsoa_1.Post)("{sessionId}/document"),
+    (0, tsoa_1.Middlewares)(upload_1.documentUpload.single("document")),
+    __param(0, (0, tsoa_1.Path)()),
+    __param(1, (0, tsoa_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], CourseDraftController.prototype, "Document", null);
 exports.CourseDraftController = CourseDraftController = __decorate([
     (0, tsoa_1.Middlewares)(requireServiceKey_1.requireServiceKey),
     (0, tsoa_1.Tags)("Course Draft AI"),
