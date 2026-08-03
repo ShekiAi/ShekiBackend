@@ -609,7 +609,11 @@ exports.Prisma.UserScalarFieldEnum = {
   resetTokenExpires: 'resetTokenExpires',
   verifiedAt: 'verifiedAt',
   userType: 'userType',
-  isSuspended: 'isSuspended'
+  isSuspended: 'isSuspended',
+  bio: 'bio',
+  church_name: 'church_name',
+  church_role: 'church_role',
+  social_media: 'social_media'
 };
 
 exports.Prisma.UserAdditionalDataScalarFieldEnum = {
@@ -734,7 +738,8 @@ exports.Prisma.CourseDraftSessionScalarFieldEnum = {
   courseId: 'courseId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  lastActivityAt: 'lastActivityAt'
+  lastActivityAt: 'lastActivityAt',
+  sessionType: 'sessionType'
 };
 
 exports.Prisma.EventAttendeeScalarFieldEnum = {

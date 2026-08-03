@@ -41,7 +41,15 @@ async function createCompletionWithRetry(messages) {
         }
         catch (error) {
             lastError = error;
-            const isToolUseFailed = error?.error?.code === "tool_use_failed" || error?.code === "tool_use_failed";
+            // groq-sdk's APIError wraps the API's own JSON body one level deeper
+            // than it looks: error.error is the raw response body, itself shaped
+            // {error: {code, message, failed_generation}} — so the real code is
+            // at error.error.error.code, not error.error.code. Verified live by
+            // dumping Object.keys/JSON of a real captured error; the shallower
+            // check below silently never matched, so this retry never actually
+            // fired despite looking like it did (the delay was just one normal
+            // call, not several).
+            const isToolUseFailed = error?.error?.error?.code === "tool_use_failed" || error?.error?.code === "tool_use_failed" || error?.code === "tool_use_failed";
             if (!isToolUseFailed || attempt === MAX_COMPLETION_RETRIES)
                 throw error;
         }

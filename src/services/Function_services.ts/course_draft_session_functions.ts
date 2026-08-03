@@ -116,13 +116,14 @@ export function emptyDraft(): CourseDraft {
   };
 }
 
-export async function createSession(tutorId: string) {
+export async function createSession(tutorId: string, sessionType: string = "course_draft", initialData: any = null) {
   return prisma.courseDraftSession.create({
     data: {
       id: randomUUID(),
       tutorId,
+      sessionType,
       status: "ACTIVE",
-      draftJson: emptyDraft() as any,
+      draftJson: (initialData ?? emptyDraft()) as any,
       updatedAt: new Date(),
     },
   });
@@ -132,9 +133,9 @@ export async function getSession(sessionId: string) {
   return prisma.courseDraftSession.findUnique({ where: { id: sessionId } });
 }
 
-export async function listSessions(tutorId: string) {
+export async function listSessions(tutorId: string, sessionType?: string) {
   return prisma.courseDraftSession.findMany({
-    where: { tutorId },
+    where: sessionType ? { tutorId, sessionType } : { tutorId },
     orderBy: { lastActivityAt: "desc" },
   });
 }

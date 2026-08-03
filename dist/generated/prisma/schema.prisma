@@ -685,6 +685,10 @@ model User {
   verifiedAt                                     DateTime?
   userType                                       UserType               @default(INDIVIDUAL)
   isSuspended                                    Boolean                @default(false)
+  bio                                            String?
+  church_name                                    String?
+  church_role                                    String?
+  social_media                                   String?
   Achievement                                    Achievement[]
   AdminProfile                                   AdminProfile?
   Badges                                         Badges[]
@@ -885,6 +889,7 @@ model CourseDraftSession {
   createdAt          DateTime             @default(now())
   updatedAt          DateTime
   lastActivityAt     DateTime             @default(now())
+  sessionType        String               @default("course_draft")
   CourseDraftMessage CourseDraftMessage[]
   Course             Course?              @relation(fields: [courseId], references: [id])
   User               User                 @relation(fields: [tutorId], references: [id], onDelete: Cascade)

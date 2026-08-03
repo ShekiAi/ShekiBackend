@@ -5,6 +5,8 @@ const runtime_1 = require("@tsoa/runtime");
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 const UserController_1 = require("./../controllers/UserController");
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+const MentorMatchController_1 = require("./../controllers/MentorMatchController");
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 const CourseDraftController_1 = require("./../controllers/CourseDraftController");
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 const AIController_1 = require("./../controllers/AIController");
@@ -40,6 +42,148 @@ function RegisterRoutes(app) {
             const controller = new UserController_1.UserController();
             await templateService.apiHandler({
                 methodName: 'health',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+            });
+        }
+        catch (err) {
+            return next(err);
+        }
+    });
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    const argsMentorMatchController_Start = {
+        body: { "in": "body", "name": "body", "required": true, "dataType": "nestedObjectLiteral", "nestedProperties": { "message": { "dataType": "string" }, "studentName": { "dataType": "string", "required": true }, "studentId": { "dataType": "string", "required": true } } },
+    };
+    app.post('/ai_v1/mentor-match/start', ...((0, runtime_1.fetchMiddlewares)(MentorMatchController_1.MentorMatchController)), ...((0, runtime_1.fetchMiddlewares)(MentorMatchController_1.MentorMatchController.prototype.Start)), async function MentorMatchController_Start(request, response, next) {
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        let validatedArgs = [];
+        try {
+            validatedArgs = templateService.getValidatedArgs({ args: argsMentorMatchController_Start, request, response });
+            const controller = new MentorMatchController_1.MentorMatchController();
+            await templateService.apiHandler({
+                methodName: 'Start',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+            });
+        }
+        catch (err) {
+            return next(err);
+        }
+    });
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    const argsMentorMatchController_Message = {
+        sessionId: { "in": "path", "name": "sessionId", "required": true, "dataType": "string" },
+        body: { "in": "body", "name": "body", "required": true, "dataType": "nestedObjectLiteral", "nestedProperties": { "message": { "dataType": "string", "required": true }, "studentName": { "dataType": "string", "required": true }, "studentId": { "dataType": "string", "required": true } } },
+    };
+    app.post('/ai_v1/mentor-match/:sessionId/message', ...((0, runtime_1.fetchMiddlewares)(MentorMatchController_1.MentorMatchController)), ...((0, runtime_1.fetchMiddlewares)(MentorMatchController_1.MentorMatchController.prototype.Message)), async function MentorMatchController_Message(request, response, next) {
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        let validatedArgs = [];
+        try {
+            validatedArgs = templateService.getValidatedArgs({ args: argsMentorMatchController_Message, request, response });
+            const controller = new MentorMatchController_1.MentorMatchController();
+            await templateService.apiHandler({
+                methodName: 'Message',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+            });
+        }
+        catch (err) {
+            return next(err);
+        }
+    });
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    const argsMentorMatchController_VoiceMessage = {
+        sessionId: { "in": "path", "name": "sessionId", "required": true, "dataType": "string" },
+        request: { "in": "request", "name": "request", "required": true, "dataType": "object" },
+    };
+    app.post('/ai_v1/mentor-match/:sessionId/voice-message', ...((0, runtime_1.fetchMiddlewares)(MentorMatchController_1.MentorMatchController)), ...((0, runtime_1.fetchMiddlewares)(MentorMatchController_1.MentorMatchController.prototype.VoiceMessage)), async function MentorMatchController_VoiceMessage(request, response, next) {
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        let validatedArgs = [];
+        try {
+            validatedArgs = templateService.getValidatedArgs({ args: argsMentorMatchController_VoiceMessage, request, response });
+            const controller = new MentorMatchController_1.MentorMatchController();
+            await templateService.apiHandler({
+                methodName: 'VoiceMessage',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+            });
+        }
+        catch (err) {
+            return next(err);
+        }
+    });
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    const argsMentorMatchController_GetSession = {
+        sessionId: { "in": "path", "name": "sessionId", "required": true, "dataType": "string" },
+        studentId: { "in": "query", "name": "studentId", "required": true, "dataType": "string" },
+    };
+    app.get('/ai_v1/mentor-match/:sessionId', ...((0, runtime_1.fetchMiddlewares)(MentorMatchController_1.MentorMatchController)), ...((0, runtime_1.fetchMiddlewares)(MentorMatchController_1.MentorMatchController.prototype.GetSession)), async function MentorMatchController_GetSession(request, response, next) {
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        let validatedArgs = [];
+        try {
+            validatedArgs = templateService.getValidatedArgs({ args: argsMentorMatchController_GetSession, request, response });
+            const controller = new MentorMatchController_1.MentorMatchController();
+            await templateService.apiHandler({
+                methodName: 'GetSession',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+            });
+        }
+        catch (err) {
+            return next(err);
+        }
+    });
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    const argsMentorMatchController_ListMine = {
+        studentId: { "in": "query", "name": "studentId", "required": true, "dataType": "string" },
+    };
+    app.get('/ai_v1/mentor-match/mine/list', ...((0, runtime_1.fetchMiddlewares)(MentorMatchController_1.MentorMatchController)), ...((0, runtime_1.fetchMiddlewares)(MentorMatchController_1.MentorMatchController.prototype.ListMine)), async function MentorMatchController_ListMine(request, response, next) {
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        let validatedArgs = [];
+        try {
+            validatedArgs = templateService.getValidatedArgs({ args: argsMentorMatchController_ListMine, request, response });
+            const controller = new MentorMatchController_1.MentorMatchController();
+            await templateService.apiHandler({
+                methodName: 'ListMine',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+            });
+        }
+        catch (err) {
+            return next(err);
+        }
+    });
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    const argsMentorMatchController_Abandon = {
+        sessionId: { "in": "path", "name": "sessionId", "required": true, "dataType": "string" },
+        body: { "in": "body", "name": "body", "required": true, "dataType": "nestedObjectLiteral", "nestedProperties": { "studentId": { "dataType": "string", "required": true } } },
+    };
+    app.post('/ai_v1/mentor-match/:sessionId/abandon', ...((0, runtime_1.fetchMiddlewares)(MentorMatchController_1.MentorMatchController)), ...((0, runtime_1.fetchMiddlewares)(MentorMatchController_1.MentorMatchController.prototype.Abandon)), async function MentorMatchController_Abandon(request, response, next) {
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        let validatedArgs = [];
+        try {
+            validatedArgs = templateService.getValidatedArgs({ args: argsMentorMatchController_Abandon, request, response });
+            const controller = new MentorMatchController_1.MentorMatchController();
+            await templateService.apiHandler({
+                methodName: 'Abandon',
                 controller,
                 response,
                 next,

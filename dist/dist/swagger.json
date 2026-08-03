@@ -190,6 +190,37 @@
                 }
             }
         },
+        "/ai_v1/course-draft/{sessionId}/voice-message": {
+            "post": {
+                "operationId": "VoiceMessage",
+                "responses": {
+                    "200": {
+                        "description": "Ok",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/APIResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Course Draft AI"
+                ],
+                "security": [],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "sessionId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/ai_v1/course-draft/{sessionId}": {
             "get": {
                 "operationId": "GetSession",
@@ -258,6 +289,55 @@
                         }
                     }
                 ]
+            }
+        },
+        "/ai_v1/course-draft/{sessionId}/finalize": {
+            "post": {
+                "operationId": "Finalize",
+                "responses": {
+                    "200": {
+                        "description": "Ok",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/APIResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Course Draft AI"
+                ],
+                "security": [],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "sessionId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "tutorId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "tutorId"
+                                ],
+                                "type": "object"
+                            }
+                        }
+                    }
+                }
             }
         },
         "/ai_v1/course-draft/{sessionId}/abandon": {

@@ -60,13 +60,14 @@ function emptyDraft() {
         _nextIds: { module: 1, lesson: 1, material: 1, quiz: 1, question: 1 },
     };
 }
-async function createSession(tutorId) {
+async function createSession(tutorId, sessionType = "course_draft", initialData = null) {
     return db_1.prisma.courseDraftSession.create({
         data: {
             id: (0, crypto_1.randomUUID)(),
             tutorId,
+            sessionType,
             status: "ACTIVE",
-            draftJson: emptyDraft(),
+            draftJson: (initialData ?? emptyDraft()),
             updatedAt: new Date(),
         },
     });
@@ -74,9 +75,9 @@ async function createSession(tutorId) {
 async function getSession(sessionId) {
     return db_1.prisma.courseDraftSession.findUnique({ where: { id: sessionId } });
 }
-async function listSessions(tutorId) {
+async function listSessions(tutorId, sessionType) {
     return db_1.prisma.courseDraftSession.findMany({
-        where: { tutorId },
+        where: sessionType ? { tutorId, sessionType } : { tutorId },
         orderBy: { lastActivityAt: "desc" },
     });
 }
