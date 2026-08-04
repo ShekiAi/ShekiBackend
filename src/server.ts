@@ -1,6 +1,7 @@
 // src/server.ts
 import app from "./app";
 import { initSocket } from "./realtime/socket";
+import { startKeepAlive } from "./utils/keepAlive";
 
 const PORT = process.env.PORT || 3000;
 
@@ -12,3 +13,5 @@ const httpServer = app.listen(PORT, () => {
 
 initSocket(httpServer);
 console.log("🔌 Socket.IO realtime layer initialized");
+
+startKeepAlive();
