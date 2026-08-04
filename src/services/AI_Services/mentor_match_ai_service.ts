@@ -217,7 +217,17 @@ export class MentorMatchAIService {
     if (!session) throw new Error("Session not found");
     if (session.tutorId !== studentId) throw new Error("This session does not belong to you");
     if (session.status !== "ACTIVE") {
-      throw new Error(`This conversation is ${session.status.toLowerCase()} and can't be continued`);
+      // A terminal session (matched/no-match/abandoned) isn't a real error —
+      // the student just kept typing after it wrapped up. Answering plainly
+      // and letting them start fresh reads far better than a hard failure.
+      const state = await getDraftSnapshotGeneric(sessionId);
+      const assistantReply =
+        session.status === "MATCHED"
+          ? `This conversation already wrapped up — you were matched with ${state.matchedTutor?.name ?? "a tutor"}! Head to that chat, or start a new conversation here if you'd like to look for someone else.`
+          : session.status === "NO_MATCH"
+            ? "This conversation already wrapped up — I wasn't able to find a match last time. Feel free to start a new conversation and tell me a bit more about what you're looking for."
+            : "This conversation was ended earlier. Start a new one whenever you're ready.";
+      return { sessionId, assistantReply, state, status: session.status, matchedTutor: state.matchedTutor };
     }
 
     await appendMessage(sessionId, { role: "user", content: userMessage });

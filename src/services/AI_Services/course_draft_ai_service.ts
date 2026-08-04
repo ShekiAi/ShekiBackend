@@ -249,7 +249,15 @@ export class CourseDraftAIService {
     if (!session) throw new Error("Session not found");
     if (session.tutorId !== tutorId) throw new Error("This session does not belong to you");
     if (session.status !== "ACTIVE" && session.status !== "AWAITING_APPROVAL") {
-      throw new Error(`Session is ${session.status.toLowerCase()} and can't be continued`);
+      // A terminal session (finalized/abandoned) isn't a real error — the
+      // tutor just kept typing after it wrapped up. Answering plainly and
+      // letting them start fresh reads far better than a hard failure.
+      const draft = await getDraftSnapshot(sessionId);
+      const assistantReply =
+        session.status === "FINALIZED"
+          ? "This course draft has already been created! Head to your course dashboard to add lesson videos and materials, or start a new conversation here to draft another course."
+          : "This conversation was ended earlier. Start a new one whenever you're ready to draft a course.";
+      return { sessionId, assistantReply, draft, status: session.status };
     }
 
     await appendMessage(sessionId, { role: "user", content: userMessage });
