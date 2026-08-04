@@ -48,4 +48,34 @@ export const getMentorMatchTools = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "search_courses",
+      description:
+        "Search GOYE's real courses by topic or skill the student wants to learn. Returns real courses with their title, description, and level — never invent a course that isn't in these results. Not terminal — you can keep chatting, or follow up with search_tutors/search_groups.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "What the student wants to learn, in their own words or a short summary of it" },
+        },
+        required: ["query"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "search_groups",
+      description:
+        "Search GOYE's real community groups — this is how a student finds \"a community to blend into\": groups of other believers organized around a topic or interest. Returns real groups with their name, description, and member count — never invent a group that isn't in these results. Not terminal.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "What kind of community or group the student is looking for, in their own words" },
+        },
+        required: ["query"],
+      },
+    },
+  },
 ];

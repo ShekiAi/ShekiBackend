@@ -11,6 +11,8 @@ export interface MentorMatchState {
   candidates?: { id: string; name: string; bio: string | null; church_role: string | null; courses: { id: string; title: string }[] }[];
   matchedTutor?: { id: string; name: string; reason: string };
   noMatchReason?: string;
+  courseCandidates?: { id: string; title: string; description: string | null; level: string | null }[];
+  groupCandidates?: { id: string; title: string; description: string | null; memberCount: number }[];
 }
 
 export function emptyMentorMatchState(): MentorMatchState {
@@ -79,6 +81,49 @@ export async function applyMentorMatchToolMutation(sessionId: string, toolName: 
       state.noMatchReason = args.reason;
       await saveState(sessionId, state);
       return { ok: true, draftSnapshot: state };
+    }
+
+    case "search_courses": {
+      const courses = await prisma.course.findMany({
+        select: { id: true, course_title: true, course_short_description: true, course_level: true },
+        orderBy: { createdAt: "desc" },
+        take: 25,
+      });
+
+      const courseCandidates = courses.map((c) => ({
+        id: c.id,
+        title: c.course_title,
+        description: c.course_short_description,
+        level: c.course_level,
+      }));
+
+      state.courseCandidates = courseCandidates;
+      await saveState(sessionId, state);
+      return { ok: true, courseCandidates, draftSnapshot: state };
+    }
+
+    case "search_groups": {
+      const groups = await prisma.group.findMany({
+        select: {
+          id: true,
+          group_title: true,
+          group_short_description: true,
+          _count: { select: { JoinedGroup: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 25,
+      });
+
+      const groupCandidates = groups.map((g) => ({
+        id: g.id,
+        title: g.group_title,
+        description: g.group_short_description,
+        memberCount: g._count.JoinedGroup,
+      }));
+
+      state.groupCandidates = groupCandidates;
+      await saveState(sessionId, state);
+      return { ok: true, groupCandidates, draftSnapshot: state };
     }
 
     default:

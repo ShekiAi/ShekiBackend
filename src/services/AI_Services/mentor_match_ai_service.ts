@@ -46,7 +46,13 @@ function summarizeState(state: MentorMatchState): string {
   if (!state.studentQuery) return "(nothing shared yet)";
   const lines: string[] = [`Looking for: ${state.studentQuery}`];
   if (state.candidates?.length) {
-    lines.push(`Last search found: ${state.candidates.map((c) => c.name).join(", ")}`);
+    lines.push(`Last tutor search found: ${state.candidates.map((c) => c.name).join(", ")}`);
+  }
+  if (state.courseCandidates?.length) {
+    lines.push(`Last course search found: ${state.courseCandidates.map((c) => c.title).join(", ")}`);
+  }
+  if (state.groupCandidates?.length) {
+    lines.push(`Last group search found: ${state.groupCandidates.map((g) => g.title).join(", ")}`);
   }
   if (state.matchedTutor) lines.push(`Matched with: ${state.matchedTutor.name} — ${state.matchedTutor.reason}`);
   if (state.noMatchReason) lines.push(`No match found: ${state.noMatchReason}`);
